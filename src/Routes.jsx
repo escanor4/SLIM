@@ -1,34 +1,19 @@
 import React from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
-import ScrollToTop from "components/ScrollToTop";
-import ErrorBoundary from "components/ErrorBoundary";
-import NotFound from "pages/NotFound";
-import TableauDeBord from './pages/tableau-de-bord';
-import MaintenancePredictive from './pages/maintenance-predictive';
-import AnalyseDesPerformances from './pages/analyse-des-performances';
-import CyclesSterilisation from './pages/cycles-de-sterilisation';
-import CertificatsNumeriques from './pages/certificats-numeriques';
-import SuiviDesInstruments from './pages/suivi-des-instruments';
+import { BrowserRouter, Routes as RRRoutes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/HomePage"; // example other page
 
-const Routes = () => {
+export default function AppRoutes() {
   return (
     <BrowserRouter>
-      <ErrorBoundary>
-      <ScrollToTop />
-      <RouterRoutes>
-        {/* Define your route here */}
-        <Route path="/" element={<TableauDeBord />} />
-        <Route path="/tableau-de-bord" element={<TableauDeBord />} />
-        <Route path="/maintenance-predictive" element={<MaintenancePredictive />} />
-        <Route path="/analyse-des-performances" element={<AnalyseDesPerformances />} />
-        <Route path="/cycles-de-sterilisation" element={<CyclesSterilisation />} />
-        <Route path="/certificats-numeriques" element={<CertificatsNumeriques />} />
-        <Route path="/suivi-des-instruments" element={<SuiviDesInstruments />} />
-        <Route path="*" element={<NotFound />} />
-      </RouterRoutes>
-      </ErrorBoundary>
+      <RRRoutes>
+        {/* Redirect root "/" to "/login" */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/home" element={<HomePage />} />
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </RRRoutes>
     </BrowserRouter>
   );
-};
-
-export default Routes;
+}
