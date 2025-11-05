@@ -9,6 +9,7 @@ import AnalyseDesPerformances from './pages/analyse-des-performances';
 import CyclesSterilisation from './pages/cycles-de-sterilisation';
 import CertificatsNumeriques from './pages/certificats-numeriques';
 import SuiviDesInstruments from './pages/suivi-des-instruments';
+import Login from './pages/login'; // <-- new import
 
 const Routes = () => {
   return (
@@ -24,6 +25,11 @@ const Routes = () => {
         <Route path="/cycles-de-sterilisation" element={<CyclesSterilisation />} />
         <Route path="/certificats-numeriques" element={<CertificatsNumeriques />} />
         <Route path="/suivi-des-instruments" element={<SuiviDesInstruments />} />
+
+        {/* New route for Login */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>
