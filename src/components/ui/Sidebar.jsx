@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
@@ -8,6 +8,22 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   const navigate = useNavigate();
   // initialize from current location so active state stays in sync with URL
   const [activeScreen, setActiveScreen] = useState(location.pathname || '/tableau-de-bord');
+
+  useEffect(() => {
+    // keep sidebar active state synced with the router location
+    setActiveScreen(location.pathname || '/tableau-de-bord');
+  }, [location.pathname]);
+
+  const handleNavigation = (path) => {
+    if (!path) return;
+    // update UI state
+    setActiveScreen(path);
+
+    // only navigate if the path differs from current location to avoid redundant pushes
+    if (path !== location.pathname) {
+      navigate(path);
+    }
+  };
 
   const navigationItems = [
     {
@@ -29,36 +45,25 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
       path: '/cycles-de-sterilisation',
       icon: 'Zap',
       alertCount: 1,
-      description: 'Gestion des autoclaves'
+      description: 'Gestion des cycles'
     },
     {
       label: 'Certificats Numériques',
       path: '/certificats-numeriques',
       icon: 'Shield',
       alertCount: 0,
-      description: 'Conformité réglementaire'
+      description: 'Traçabilité des certificats'
     },
+    // add other items...
+    // Example bottom item that may be the reported problematic one:
     {
       label: 'Maintenance Prédictive',
       path: '/maintenance-predictive',
       icon: 'Wrench',
       alertCount: 2,
-      description: 'IA et maintenance préventive'
-    },
-    {
-      label: 'Analyse des Performances',
-      path: '/analyse-des-performances',
-      icon: 'BarChart3',
-      alertCount: 0,
-      description: 'Métriques et KPI'
+      description: 'Surveillance et alertes'
     }
   ];
-
-  // Minimal fix: actually navigate using the router
-  const handleNavigation = (path) => {
-    setActiveScreen(path);
-    navigate(path);
-  };
 
   const renderNavItem = (item) => {
     const isActive = activeScreen === item?.path;
@@ -164,28 +169,15 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse }) => {
 
         {/* User Info */}
         <div className="p-4 border-t border-border">
-          {!isCollapsed ? (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <Icon name="User" size={16} color="white" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-muted rounded-md" />
+            {!isCollapsed && (
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Superviseur CSSD</span>
+                <span className="text-xs text-muted-foreground">admin@hospital.local</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">
-                  Marie Dubois
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Superviseur CSSD
-                </div>
-              </div>
-              <Button variant="ghost" size="xs" iconName="Settings" />
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <Icon name="User" size={16} color="white" />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </aside>

@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigationItems = [
@@ -48,13 +52,24 @@ const Header = () => {
   ];
 
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [activeScreen, setActiveScreen] = useState('/tableau-de-bord');
+  const [activeScreen, setActiveScreen] = useState(location.pathname || '/tableau-de-bord');
+
+  useEffect(() => {
+    setActiveScreen(location.pathname || '/tableau-de-bord');
+  }, [location.pathname]);
 
   const handleNavigation = (path) => {
+    if (!path) return;
+
+    // update UI state
     setActiveScreen(path);
     setIsMobileMenuOpen(false);
     setShowMoreMenu(false);
-    // Navigation logic would be handled by React Router
+
+    // perform router navigation if path differs
+    if (path !== location.pathname) {
+      navigate(path);
+    }
   };
 
   const toggleMobileMenu = () => {
@@ -137,13 +152,8 @@ const Header = () => {
                         }
                       `}
                     >
-                      <Icon name={item?.icon} size={18} />
-                      <span>{item?.label}</span>
-                      {item?.alertCount > 0 && (
-                        <span className="ml-auto bg-error text-error-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                          {item?.alertCount}
-                        </span>
-                      )}
+                      <Icon name={item?.icon} size={16} />
+                      <span className="truncate">{item?.label}</span>
                     </button>
                   ))}
                 </div>
@@ -152,26 +162,16 @@ const Header = () => {
           </div>
         </nav>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center gap-3">
-          {/* Quick Scan Access */}
-          <Button
-            variant="outline"
-            size="sm"
-            iconName="Scan"
-            iconPosition="left"
-            className="hidden sm:flex"
-          >
-            Scanner
-          </Button>
-
-          {/* User Role Indicator */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-muted rounded-md">
-            <Icon name="User" size={16} />
-            <span className="text-sm font-medium text-muted-foreground">Superviseur CSSD</span>
+        {/* Right side: user, mobile toggle */}
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-primary hover:bg-slate-100 transition-all duration-200">
+              <Icon name="User" size={16} />
+              <span className="text-sm font-medium">Superviseur CSSD</span>
+            </div>
+            <Button variant="ghost" size="xs" iconName="Settings" />
           </div>
 
-          {/* Mobile Menu Toggle */}
           <button
             onClick={toggleMobileMenu}
             className="md:hidden p-2 rounded-md text-slate-600 hover:text-primary hover:bg-slate-100 transition-colors"
@@ -180,6 +180,7 @@ const Header = () => {
           </button>
         </div>
       </div>
+
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-border shadow-medical-lg">
@@ -195,21 +196,23 @@ const Header = () => {
                 iconPosition="left"
                 fullWidth
                 className="mb-2"
+                onClick={() => {
+                  // Example: if mobile quick action navigates somewhere
+                  handleNavigation('/scanning');
+                }}
               >
                 Scanner un Instrument
               </Button>
               
               <div className="flex items-center justify-between p-2 bg-muted rounded-md">
-                <div className="flex items-center gap-2">
-                  <Icon name="User" size={16} />
-                  <span className="text-sm font-medium">Superviseur CSSD</span>
-                </div>
-                <Button variant="ghost" size="xs" iconName="Settings" />
+                <span className="text-sm text-muted-foreground">Quick access</span>
+                <Button variant="ghost" size="icon" iconName="ChevronRight" />
               </div>
             </div>
           </div>
         </div>
       )}
+
       {/* Overlay for mobile menu */}
       {isMobileMenuOpen && (
         <div 
