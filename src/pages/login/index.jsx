@@ -10,19 +10,15 @@ import { useNavigate } from 'react-router-dom';
  * - Accessible error messaging (aria-live)
  * - Smooth transitions and subtle gradient background
  *
- * Usage:
- * - Place this file in src/pages/login/index.jsx
- * - Add a route in Routes.jsx: <Route path="/login" element={<Login />} />
- *
- * Security notes (important):
- * - This component does not store passwords in localStorage.
- * - On successful authentication prefer server-set HttpOnly cookies (so tokens aren't accessible from JS).
- * - Provide a CSRF token from the server and include it in the request headers when required.
+ * Security & integration notes:
+ * - Replace the /api/auth/login endpoint with your real auth endpoint.
+ * - Prefer server-set HttpOnly cookies for sessions; use credentials: 'include' on fetch.
+ * - Add CSRF token header if your backend requires it.
  */
 
 const Login = () => {
   const navigate = useNavigate();
-  const emailRef = useRef(null);
+  const identifierRef = useRef(null);
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -38,11 +34,10 @@ const Login = () => {
 
   const validate = () => {
     const errs = {};
-    if (!identifier?.trim()) errs.identifier = 'Le nom d’utilisateur ou l’email est requis.';
-    else if (identifier.includes('@') && !EMAIL_RE.test(identifier)) errs.identifier = 'Format d’email invalide.';
+    if (!identifier?.trim()) errs.identifier = "Le nom d’utilisateur ou l’email est requis.";
+    else if (identifier.includes('@') && !EMAIL_RE.test(identifier)) errs.identifier = "Format d’email invalide.";
 
     if (!password) errs.password = 'Le mot de passe est requis.';
-    // Add more checks (min length, password strength) if needed
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -52,20 +47,18 @@ const Login = () => {
     setError('');
     if (!validate()) {
       // focus first invalid field
-      if (fieldErrors.identifier) emailRef.current?.focus();
+      if (fieldErrors.identifier) identifierRef.current?.focus();
       return;
     }
 
     setLoading(true);
 
     try {
-      // Example POST to auth endpoint. Replace with your real endpoint.
-      // Use credentials: 'include' if your server sets HttpOnly cookies for sessions.
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // 'X-CSRF-Token': window.__CSRF_TOKEN__  // uncomment if you set up CSRF
+          // 'X-CSRF-Token': window.__CSRF_TOKEN__ // uncomment if you have a CSRF token in global
         },
         credentials: 'include',
         body: JSON.stringify({
@@ -76,7 +69,6 @@ const Login = () => {
       });
 
       if (!res.ok) {
-        // Try to parse message from server
         let msg = 'Échec de la connexion. Veuillez réessayer.';
         try {
           const body = await res.json();
@@ -85,17 +77,11 @@ const Login = () => {
         throw new Error(msg);
       }
 
-      // On success, server should set a secure HttpOnly cookie or return a token.
-      // Do NOT store raw password or tokens in localStorage unless you understand the risk.
-      // If server returns useful user info, you can read it and route accordingly.
       const payload = await res.json();
-
-      // Optionally: use payload.redirect or next param
       const redirectTo = payload?.redirect || '/tableau-de-bord';
       navigate(redirectTo);
     } catch (err) {
       setError(err?.message || 'Erreur inconnue');
-      // Keep generic messages for security if desired
     } finally {
       setLoading(false);
     }
@@ -105,7 +91,6 @@ const Login = () => {
     <div
       className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50"
       style={{
-        // subtle diagonal gradient overlay + faint pattern via CSS gradients
         backgroundImage:
           'linear-gradient(135deg, rgba(59,130,246,0.03) 0%, rgba(16,185,129,0.02) 50%, rgba(234,88,12,0.01) 100%)'
       }}
@@ -155,7 +140,7 @@ const Login = () => {
                 </label>
                 <input
                   id="identifier"
-                  ref={emailRef}
+                  ref={identifierRef}
                   name="identifier"
                   type="text"
                   inputMode="email"
@@ -250,7 +235,7 @@ const Login = () => {
               </div>
 
               <div className="pt-4 text-center text-xs text-muted-foreground">
-                By continuing you agree to our <button type="button" className="text-primary hover:underline">Terms</button> and <button type="button" className="text-primary hover:underline">Privacy Policy</button>.
+                En continuant, vous acceptez nos <button type="button" className="text-primary hover:underline">Conditions</button> et la <button type="button" className="text-primary hover:underline">Politique de confidentialité</button>.
               </div>
             </div>
           </form>
